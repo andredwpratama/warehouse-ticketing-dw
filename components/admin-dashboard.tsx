@@ -29,12 +29,27 @@ const MONTHS = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ]
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+const fetcher = async (url: string): Promise<TicketType[]> => {
+  const res = await fetch(url)
+  if (!res.ok) {
+    let message = "Gagal mengambil data tiket"
+    try {
+      const body = await res.json()
+      if (body?.error) message = body.error
+    } catch {
+      // ignore non-JSON error bodies
+    }
+    throw new Error(message)
+  }
+  const data = await res.json()
+  return Array.isArray(data) ? data : []
+}
 
 export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
-  const { data: tickets = [], mutate, isLoading } = useSWR<TicketType[]>("/api/tickets", fetcher, {
+  const { data, mutate, isLoading, error } = useSWR<TicketType[]>("/api/tickets", fetcher, {
     refreshInterval: 10000,
   })
+  const tickets = Array.isArray(data) ? data : []
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedMonth, setSelectedMonth] = useState(0)
   const [viewTicket, setViewTicket] = useState<TicketType | null>(null)
@@ -178,6 +193,20 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
             {isLoading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin" style={{ color: "#e65100" }} />
+              </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                <p className="text-sm font-medium" style={{ color: "#dc2626" }}>
+                  {error.message || "Gagal memuat data tiket."}
+                </p>
+                <button
+                  onClick={() => mutate()}
+                  className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors"
+                  style={{ backgroundColor: "#e65100", color: "#ffffff" }}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Coba Lagi
+                </button>
               </div>
             ) : (
               <div className="overflow-x-auto">

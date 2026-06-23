@@ -10,7 +10,11 @@ export async function GET() {
     return NextResponse.json(tickets)
   } catch (error) {
     console.error("GET /api/tickets error:", error)
-    return NextResponse.json({ error: "Gagal mengambil data tiket" }, { status: 500 })
+    const detail = error instanceof Error ? error.message : String(error)
+    return NextResponse.json(
+      { error: "Gagal mengambil data tiket", detail },
+      { status: 500 }
+    )
   }
 }
 
@@ -91,6 +95,6 @@ function mapRow(row: Record<string, unknown>) {
     time: row.time as string,
     slot: row.slot as string,
     status: row.status as string,
-    createdAt: (row.created_at as Date).toISOString(),
+    createdAt: new Date(row.created_at as string | Date).toISOString(),
   }
 }

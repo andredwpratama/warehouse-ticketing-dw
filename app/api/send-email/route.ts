@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import nodemailer from "nodemailer"
+import { Resend } from "resend"
 
 export async function POST(request: Request) {
   try {
@@ -10,21 +10,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "to and subject required" }, { status: 400 })
     }
 
-    // If SMTP env vars are not set, skip silently
-    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.log("SMTP not configured, skipping email for ticket:", ticketId)
-      return NextResponse.json({ skipped: true, message: "SMTP not configured" })
+    // If Resend is not configured, skip silently
+    if (!process.env.RESEND_API_KEY) {
+      console.log("RESEND_API_KEY not configured, skipping email for ticket:", ticketId)
+      return NextResponse.json({ skipped: true, message: "Resend not configured" })
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || "587"),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -71,14 +63,19 @@ export async function POST(request: Request) {
       </div>
     `
 
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    const { data, error } = await resend.emails.send({
+      from: process.env.RESEND_FROM || "onboarding@resend.dev",
       to,
       subject,
       html,
     })
 
-    return NextResponse.json({ success: true })
+    if (error) {
+      console.error("Resend send error:", error)
+      return NextResponse.json({ error: "Gagal mengirim email" }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, id: data?.id })
   } catch (error) {
     console.error("POST /api/send-email error:", error)
     return NextResponse.json({ error: "Gagal mengirim email" }, { status: 500 })

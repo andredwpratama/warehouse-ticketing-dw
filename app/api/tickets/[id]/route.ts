@@ -122,6 +122,6 @@ function mapRow(row: Record<string, unknown>) {
     time: row.time as string,
     slot: row.slot as string,
     status: row.status as string,
-    createdAt: (row.created_at as Date).toISOString(),
+    createdAt: new Date(row.created_at as string | Date).toISOString(),
   }
 }
