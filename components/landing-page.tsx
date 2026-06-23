@@ -135,13 +135,6 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             <CalendarDays className="h-4 w-4" />
             Buat Tiket Pengiriman
           </button>
-          <button
-            onClick={() => onNavigate("admin-login")}
-            className="flex items-center gap-2 rounded-lg border-2 px-6 py-2.5 text-sm font-semibold transition-colors"
-            style={{ borderColor: "#e65100", color: "#e65100", backgroundColor: "#ffffff" }}
-          >
-            Admin Login
-          </button>
         </div>
 
         {/* Track Ticket */}
