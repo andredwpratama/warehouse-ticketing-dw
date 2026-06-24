@@ -1,0 +1,11 @@
+Berdasarkan umpan balik dari pihak user, diperlukan penyempurnaan sistem yang akan dieksekusi pada iterasi selanjutnya. Umpan balik tersebut dirincikan dalam beberapa aspek berikut:
+-	Penambahan kolom input deskripsi detail barang yang bersifat wajib (mandatory) agar crew warehouse mengetahui secara pasti jenis material yang akan dibongkar.
+-	Penambahan kolom Notes (opsional) bagi vendor untuk menyematkan informasi khusus terkait pengiriman.
+-	Kebijakan 1 Tiket = 1 PO dengan mengubah field "Jumlah PO" menjadi "Nomor PO". Sistem akan dikunci dengan aturan bahwa satu tiket pengiriman hanya berlaku untuk satu Nomor PO spesifik demi akurasi pencatatan.
+-	Penambahan algoritma pengaturan slot yang mewajibkan vendor yang membawa lebih dari satu PO terkait untuk memesan time-slot yang bersebelahan secara waktu guna mencegah interupsi proses bongkar muat.
+-	Peningkatan interaktivitas antarmuka admin di mana setiap slot yang terisi dapat diklik untuk memunculkan pop-up atau panel detail informasi pengantaran secara instan.
+-	Pemberian otoritas bagi Admin untuk melakukan force block pada slot yang masih kosong. Hal ini diperlukan sebagai langkah antisipasi jika fasilitas loading dock mendadak ditutup karena ada prioritas unloading internal atau kondisi mendesak lainnya.
+-	Menyempurnakan fitur filter waktu yang saat ini hanya berbasis bulan, menjadi filter rentang tanggal (date picker) spesifik agar pencarian data menjadi lebih tajam.
+-	Penambahan fitur pop-up notification yang muncul secara otomatis saat Admin melakukan login, memberikan peringatan real-time terkait tiket baru yang masuk, jadwal yang diubah (reschedule), atau tiket yang dibatalkan oleh vendor.
+-	Modifikasi fitur "Lacak Tiket" agar tidak hanya mencari berdasarkan Nomor Tiket, tetapi juga dapat menggunakan Nama Vendor. Hasil pencarian akan menampilkan seluruh riwayat pesanan tiket dari vendor tersebut untuk rekam jejak operasional.
+-	Mengingat fitur pembatalan (cancel) dapat dilakukan oleh kedua belah pihak, dashboard sistem wajib menampilkan grafik Pie Chart pada dashboard yang membedah rasio pembatalan tiket (Batal oleh Vendor vs. Batal oleh Admin) sebagai bahan evaluasi performa manajemen logistik.

@@ -12,12 +12,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "date and time required" }, { status: 400 })
     }
 
-    const rows = await sql`
-      SELECT slot FROM tickets 
-      WHERE date = ${date} AND time = ${time} AND status != 'cancelled'
-    `
+    const [ticketRows, blockedRows] = await Promise.all([
+      sql`SELECT slot FROM tickets WHERE date = ${date} AND time = ${time} AND status != 'cancelled'`,
+      sql`SELECT slot FROM blocked_slots WHERE date = ${date} AND time = ${time}`,
+    ])
 
-    const bookedSlots = rows.map((r) => r.slot as string)
+    const bookedSlots = [
+      ...ticketRows.map((r) => r.slot as string),
+      ...blockedRows.map((r) => r.slot as string),
+    ]
     return NextResponse.json(bookedSlots)
   } catch (error) {
     console.error("GET /api/slots error:", error)

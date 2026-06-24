@@ -3,15 +3,44 @@ export interface Ticket {
   vendorName: string
   email: string
   pic: string
-  jumlahPO: number
+  nomorPO: string
   jumlahKoli: number
   jumlahItem: number
   jumlahQuantity: number
+  deskripsiBarang: string
+  catatanKhusus?: string
+  notes?: string
+  cancelledBy?: "vendor" | "admin" | null
   date: string
   time: string
   slot: string
   status: "active" | "cancelled" | "completed"
   createdAt: string
+  updatedAt?: string
+}
+
+export interface BlockedSlot {
+  id: string
+  date: string
+  time: string
+  slot: string
+  reason?: string
+  createdAt: string
+}
+
+export interface AdminNotification {
+  newTickets: Ticket[]
+  rescheduledTickets: Ticket[]
+  cancelledTickets: Ticket[]
+}
+
+export interface POEntry {
+  nomorPO: string
+  deskripsiBarang: string
+  jumlahKoli: number
+  jumlahItem: number
+  jumlahQuantity: number
+  catatanKhusus?: string
 }
 
 export interface SlotMap {

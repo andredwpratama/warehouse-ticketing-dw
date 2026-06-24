@@ -1,4 +1,4 @@
-import type { Ticket } from "./types"
+import type { Ticket, BlockedSlot, AdminNotification, POEntry } from "./types"
 
 const API = "/api"
 
@@ -15,18 +15,22 @@ export async function fetchTicketById(id: string): Promise<Ticket | null> {
   return res.json()
 }
 
+export async function fetchTicketsByVendor(name: string): Promise<Ticket[]> {
+  const res = await fetch(`${API}/tickets/by-vendor?name=${encodeURIComponent(name)}`)
+  if (!res.ok) throw new Error("Gagal mencari tiket")
+  return res.json()
+}
+
 export async function createTicket(data: {
   vendorName: string
   email: string
   pic: string
-  jumlahPO: number
-  jumlahKoli: number
-  jumlahItem: number
-  jumlahQuantity: number
+  poEntries: POEntry[]
+  notes?: string
   date: string
   time: string
-  slot: string
-}): Promise<Ticket> {
+  startingSlot: string
+}): Promise<Ticket[]> {
   const res = await fetch(`${API}/tickets`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -62,6 +66,43 @@ export async function deleteTicketApi(id: string): Promise<void> {
 export async function fetchBookedSlots(date: string, time: string): Promise<string[]> {
   const res = await fetch(`${API}/slots?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`)
   if (!res.ok) return []
+  return res.json()
+}
+
+export async function fetchBlockedSlotsForDate(date: string): Promise<BlockedSlot[]> {
+  const res = await fetch(`${API}/blocked-slots?date=${encodeURIComponent(date)}`)
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function createBlockedSlot(data: {
+  date: string
+  time: string
+  slot: string
+  reason?: string
+}): Promise<BlockedSlot> {
+  const res = await fetch(`${API}/blocked-slots`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    const err = await res.json()
+    throw new Error(err.error || "Gagal memblokir slot")
+  }
+  return res.json()
+}
+
+export async function deleteBlockedSlot(id: string): Promise<void> {
+  const res = await fetch(`${API}/blocked-slots/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  })
+  if (!res.ok) throw new Error("Gagal menghapus blocked slot")
+}
+
+export async function fetchNotifications(since: string): Promise<AdminNotification> {
+  const res = await fetch(`${API}/notifications?since=${encodeURIComponent(since)}`)
+  if (!res.ok) throw new Error("Gagal mengambil notifikasi")
   return res.json()
 }
 

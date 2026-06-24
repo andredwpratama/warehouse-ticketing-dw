@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getDb } from "@/lib/db"
+import { mapTicketRow } from "@/lib/mappers"
 
 export async function GET(
   _request: Request,
@@ -15,7 +16,7 @@ export async function GET(
       return NextResponse.json({ error: "Tiket tidak ditemukan" }, { status: 404 })
     }
 
-    return NextResponse.json(mapRow(rows[0]))
+    return NextResponse.json(mapTicketRow(rows[0]))
   } catch (error) {
     console.error("GET /api/tickets/[id] error:", error)
     return NextResponse.json({ error: "Gagal mengambil tiket" }, { status: 500 })
@@ -42,10 +43,14 @@ export async function PATCH(
     const vendorName = body.vendorName ?? current.vendor_name
     const email = body.email ?? current.email
     const pic = body.pic ?? current.pic
-    const jumlahPO = body.jumlahPO ?? current.jumlah_po
+    const nomorPO = body.nomorPO ?? current.nomor_po
     const jumlahKoli = body.jumlahKoli ?? current.jumlah_koli
     const jumlahItem = body.jumlahItem ?? current.jumlah_item
     const jumlahQuantity = body.jumlahQuantity ?? current.jumlah_quantity
+    const deskripsiBarang = body.deskripsiBarang ?? current.deskripsi_barang
+    const catatanKhusus = body.catatanKhusus !== undefined ? body.catatanKhusus : current.catatan_khusus
+    const notes = body.notes !== undefined ? body.notes : current.notes
+    const cancelledBy = body.cancelledBy !== undefined ? body.cancelledBy : current.cancelled_by
     const date = body.date ?? current.date
     const time = body.time ?? current.time
     const slot = body.slot ?? current.slot
@@ -54,7 +59,7 @@ export async function PATCH(
     // If date/time/slot changed, check availability
     if (date !== current.date || time !== current.time || slot !== current.slot) {
       const existing = await sql`
-        SELECT id FROM tickets 
+        SELECT id FROM tickets
         WHERE date = ${date} AND time = ${time} AND slot = ${slot} AND status != 'cancelled' AND id != ${decodedId}
       `
       if (existing.length > 0) {
@@ -67,19 +72,24 @@ export async function PATCH(
         vendor_name = ${vendorName},
         email = ${email},
         pic = ${pic},
-        jumlah_po = ${jumlahPO},
+        nomor_po = ${nomorPO},
         jumlah_koli = ${jumlahKoli},
         jumlah_item = ${jumlahItem},
         jumlah_quantity = ${jumlahQuantity},
+        deskripsi_barang = ${deskripsiBarang},
+        catatan_khusus = ${catatanKhusus},
+        notes = ${notes},
+        cancelled_by = ${cancelledBy},
         date = ${date},
         time = ${time},
         slot = ${slot},
-        status = ${status}
+        status = ${status},
+        updated_at = NOW()
       WHERE id = ${decodedId}
     `
 
     const updated = await sql`SELECT * FROM tickets WHERE id = ${decodedId}`
-    return NextResponse.json(mapRow(updated[0]))
+    return NextResponse.json(mapTicketRow(updated[0]))
   } catch (error) {
     console.error("PATCH /api/tickets/[id] error:", error)
     return NextResponse.json({ error: "Gagal mengupdate tiket" }, { status: 500 })
@@ -105,23 +115,5 @@ export async function DELETE(
   } catch (error) {
     console.error("DELETE /api/tickets/[id] error:", error)
     return NextResponse.json({ error: "Gagal menghapus tiket" }, { status: 500 })
-  }
-}
-
-function mapRow(row: Record<string, unknown>) {
-  return {
-    id: row.id as string,
-    vendorName: row.vendor_name as string,
-    email: row.email as string,
-    pic: row.pic as string,
-    jumlahPO: Number(row.jumlah_po),
-    jumlahKoli: Number(row.jumlah_koli),
-    jumlahItem: Number(row.jumlah_item),
-    jumlahQuantity: Number(row.jumlah_quantity),
-    date: row.date as string,
-    time: row.time as string,
-    slot: row.slot as string,
-    status: row.status as string,
-    createdAt: new Date(row.created_at as string | Date).toISOString(),
   }
 }
